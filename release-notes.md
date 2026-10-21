@@ -1,3 +1,19 @@
+# 1.1.74
+
+## 中文
+
+- 版本 **1.1.74**。
+- 1.1.73 之后重启门已经能过，但密封壳仍是 `app.asar` 里的旧 close 回调。官方重启脚本里有一句中文注释，`isWshAscii` 为假，Windows 一直走 PowerShell。这条路径在 1.5–2 秒后对宿主 `process.exit(0)`。旧壳把退出码 0 记成 `dsh desktop host stopped` 并弹出「DeepSeek Harness 无法使用」。对话框还占着 `app.asar`，改名没有发生，所以没有 `app.asar.bak`。
+- 重启脚本改回纯 ASCII，本机有 JScript 时仍走 wscript。PowerShell 只在 wscript 跑不起来时使用。两条路径都由 Job 外面的进程先结束 GUI，确认 GUI 退出后再结束宿主，然后才 `MoveFile` `app.asar` → `app.asar.bak`，再打开 exe。Windows 上宿主自己不再 `process.exit`。
+- 每一步写入 `%TEMP%\dsh-purge-desktop.log`：`kill gui`、`gui gone`、`kill host`、`processes gone`、`renamed`、`started`，失败时有 `rename attempt` / `rename failed`。
+
+## English
+
+- **1.1.74**.
+- After 1.1.73 the restart gate can pass, but the sealed shell is still the stock close handler inside `app.asar`. A Chinese comment in the official restart script made `isWshAscii` false, so Windows always took PowerShell. That path called `process.exit(0)` on the host after 1.5–2 seconds. The stock shell records exit code 0 as `dsh desktop host stopped` and shows “DeepSeek Harness 无法使用”. The dialog kept `app.asar` open, so the rename never ran and `app.asar.bak` was missing.
+- The restart script is ASCII again, so a machine with JScript uses wscript. PowerShell remains the fallback when wscript cannot run. Both paths run outside the Electron job, end the GUI, wait until that process is gone, then end the host, then `MoveFile` `app.asar` to `app.asar.bak`, then start the exe. On Windows the host no longer calls `process.exit` itself.
+- Each step is appended to `%TEMP%\dsh-purge-desktop.log`: `kill gui`, `gui gone`, `kill host`, `processes gone`, `renamed`, `started`. Failures include `rename attempt` / `rename failed`.
+
 # 1.1.73
 
 ## 中文
