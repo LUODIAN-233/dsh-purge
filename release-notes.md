@@ -1,3 +1,19 @@
+# 1.1.73
+
+## 中文
+
+- 版本 **1.1.73**。
+- 桌面 0.2.1-rc.2 的 `system-prompt/assemble` 在 return 前声明 `requiredContexts`。抑制运行时上下文时，contexts 写成 `transformed.contexts.filter((entry) => requiredContexts.has(entry.name))`。#40 只认 0.2.0 的 `contexts: runtimeContextSuppressed ? [] : transformed.contexts`，这条补丁被跳过。`dsh-system-prompt/lib/index.js` 仍留着 `sections: completeSection === void 0 ? transformed.sections : [completeSection]`，没有 keeps inject 标记。重启前 `ensureHostClean` 报「清洗没有写进全部宿主，已取消重启」，`app.asar` 留在原处。
+- #40 增加 0.2.1-rc.2 锚点。注入段的拼接与 0.2.0 相同，同时保留 `requiredContexts` 和按 required 过滤。0.2.0 的替换仍是 `? []`。
+- 清洗没写完，或没写进宿主时，失败原因带上补丁号、名字和文件，例如 `#40 COMPLETE_PROMPT_KEEP_INJECT`、`dsh-system-prompt/lib/index.js`。
+
+## English
+
+- **1.1.73**.
+- On desktop 0.2.1-rc.2, `system-prompt/assemble` declares `requiredContexts` before the return. When runtime context is suppressed, contexts is `transformed.contexts.filter((entry) => requiredContexts.has(entry.name))`. #40 only matched 0.2.0's `contexts: runtimeContextSuppressed ? [] : transformed.contexts`, so that patch was skipped. `dsh-system-prompt/lib/index.js` kept `sections: completeSection === void 0 ? transformed.sections : [completeSection]` and had no keeps-inject marker. `ensureHostClean` then cancelled restart with “清洗没有写进全部宿主”, and `app.asar` stayed in place.
+- #40 now has a 0.2.1-rc.2 anchor. The inject splice matches 0.2.0, and the replacement keeps `requiredContexts` plus the required-name filter. The 0.2.0 replacement still writes `? []`.
+- When a restart is cancelled because the clean is incomplete or missing from the host, the error names the patch id, name, and file, for example `#40 COMPLETE_PROMPT_KEEP_INJECT` and `dsh-system-prompt/lib/index.js`.
+
 # 1.1.72
 
 ## 中文

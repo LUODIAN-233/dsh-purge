@@ -1,0 +1,12 @@
+		const transformed = await this.ctx.waterfall(scopeTarget(this, scope), "system-prompt/assemble", assembly, context, () => Promise.resolve(assembly));
+		if (completeSection === void 0 && !runtimeContextSuppressed) return transformed;
+		const requiredContexts = new Set([...contextByName.values()].filter((entry) => entry.required === true).map((entry) => entry.name));
+		return {
+			...transformed,
+			sections: completeSection === void 0 ? transformed.sections : [completeSection],
+			contexts: runtimeContextSuppressed ? transformed.contexts.filter((entry) => requiredContexts.has(entry.name)) : transformed.contexts
+		};
+	}
+};
+//#endregion
+export { PERSONA_PREFIX_SECTION, PERSONA_SUFFIX_SECTION, SystemPrompt, SystemPrompt as default, TOOL_ORDER_REST, joinContextSections, renderContextSections, renderContextSnapshot, renderPrompt };
