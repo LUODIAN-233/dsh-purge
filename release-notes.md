@@ -1,3 +1,23 @@
+# 1.1.75
+
+## 中文
+
+- 版本 **1.1.75**。
+- 1.1.74 用 PowerShell `Invoke-CimMethod Win32_Process Create` 拉起 `wscript.exe //B`。启动器进程退出码 0 就记成成功，桌面日志只有 `restart wmi launcher (wscript) exit 0`。这次机器上没有 `ReturnValue` / `ProcessId`，`%TEMP%\dsh-purge-official-restart.log` 没有生成，脚本没有写下 `restart begin`，`dsh-purge-official-restarting` 一直留着。wscript 没有跑到第一行，`app.asar` 还在原处。
+- 启动器改成 ASCII 输出 `ReturnValue=` 和 `ProcessId=`。管道若仍是 UTF-16 LE，先按 UTF-16 解码再写入桌面日志。退出码 0、`ReturnValue=0`、`ProcessId` 大于 0 这三件同时成立，才算 WMI 创建了进程。
+- 官方重启改用 `cscript.exe //nologo //B` 跑同一份 JScript。脚本在创建 `WScript.Shell` 和 WMI 之前先写心跳文件，并往桌面日志写 `restart begin`。宿主等几秒：心跳里有 `begin`，并且会话号大于 0（或进程还在、会话号暂时读不到），这次启动才算成功。会话 0 的进程会自己退出，避免在非交互会话里结束 GUI。
+- 心跳没有出现时继续下一种，并把原因写进 `%TEMP%\dsh-purge-desktop.log`：WMI Create、一次性计划任务（当前用户的交互会话，父进程是任务计划程序；开始日期是 2000-01-01，残留任务不会等到半夜再跑）、`detached` breakaway、`cmd /c start /MIN`、PowerShell `Start-Process`。真正写下心跳的那种记为 `restart launch heartbeat ok method=...`。
+- Windows 上宿主仍然不调用 `process.exit`。心跳确认之后，脚本还是先结束 GUI，再结束宿主，然后才把 `app.asar` 挪成 `app.asar.bak`。
+
+## English
+
+- **1.1.75**.
+- 1.1.74 launched `wscript.exe //B` through PowerShell `Invoke-CimMethod Win32_Process Create` and treated the launcher's exit code 0 as success. The desktop log stopped at `restart wmi launcher (wscript) exit 0`. On this machine there was no `ReturnValue` or `ProcessId`, `%TEMP%\dsh-purge-official-restart.log` was never created, the script never wrote `restart begin`, and `dsh-purge-official-restarting` stayed on disk. wscript never reached its first line, so `app.asar` stayed in place.
+- The launcher now prints ASCII `ReturnValue=` and `ProcessId=`. UTF-16 LE pipe output is decoded before it is logged. A WMI create counts only when the launcher exits 0, `ReturnValue` is 0, and `ProcessId` is greater than 0.
+- The official restart runs the same JScript with `cscript.exe //nologo //B`. The script writes a heartbeat file and `restart begin` before it creates `WScript.Shell` or WMI. The host waits a few seconds and accepts the attempt when the heartbeat contains `begin` and the session id is greater than 0 (or the process is still alive and the session id is not known yet). A session 0 process exits on its own, so it does not kill the GUI from a non-interactive session.
+- If the heartbeat is missing, the host tries the next launcher and writes the reason to `%TEMP%\dsh-purge-desktop.log`: WMI Create, a one-shot scheduled task (interactive session, parented by Task Scheduler; the start date is 2000-01-01 so a leftover task does not run at midnight), detached breakaway, `cmd /c start /MIN`, then PowerShell `Start-Process`. The launcher that wrote the heartbeat is logged as `restart launch heartbeat ok method=...`.
+- On Windows the host still does not call `process.exit`. After the heartbeat, the script still ends the GUI, then the host, and only then moves `app.asar` to `app.asar.bak`.
+
 # 1.1.74
 
 ## 中文
