@@ -1,3 +1,23 @@
+# 1.1.72
+
+## 中文
+
+- 版本 **1.1.72**。
+- 声明适配 **DSH 0.2.1-rc.2**（桌面 Electron 44 / Node 24）。关闭宿主的补丁锚点没有改。
+- Windows 上点「应用」解包时，备份 `dsh.cmd` 的 `rename` 出现 `ENOENT`。`atomicCopyFile` 是异步的，却写在同步 `try/catch` 里没有 `await`，拒绝变成未处理拒绝，宿主退出码 1。此时 `resources\app` 已经解开，`app.asar` 还在，壳补丁和 `dsh.cmd` 都没写上。
+- 备份改为 await。失败只记进桌面日志和 `cli_repair`，继续改 shim、打壳补丁，再挪走 `app.asar`。
+- 原子改名对 `ENOENT` / `EPERM` / `EBUSY` 做有限次重试。临时文件已经没了、目标大小对得上，视为成功。
+- 查过同类调用：另一处没挂 `error` 的重启 spawn（helper / wscript）也会把宿主打死，已补上。
+
+## English
+
+- **1.1.72**.
+- Declared target is **DSH 0.2.1-rc.2** (desktop Electron 44 / Node 24). Close-handler anchors are unchanged.
+- On Windows Apply, backing up `dsh.cmd` could `rename` with `ENOENT`. `atomicCopyFile` is async and was called inside a sync `try/catch` without `await`, so the rejection killed the host (exit 1). `resources\app` was already unpacked, `app.asar` was still in place, and neither the shell patches nor `dsh.cmd` were written.
+- The backup is awaited. A failure is written to the desktop log and `cli_repair`, then the shim write, shell patches, and `app.asar` move still run.
+- Atomic renames retry `ENOENT` / `EPERM` / `EBUSY`. If the temp file is gone and the destination size matches, the rename counts as done.
+- Same class of host-killing miss: restart `spawn` of the helper / `wscript` had no `error` listener. Those listeners are in place.
+
 # 1.1.71
 
 ## 中文

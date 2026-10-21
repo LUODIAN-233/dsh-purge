@@ -64,7 +64,7 @@ async function main() {
       console.log("[ERROR] 提示词和规则集都是空的，必须先添加提示词");
       process.exit(1);
     }
-    const { hosts, report } = await core.applyPatchesAllHosts(core.ALL_PATCHES, {
+    const { hosts, report, cliRepair } = await core.applyPatchesAllHosts(core.ALL_PATCHES, {
       preserveClientBundles: false,
       forApply: true,
     });
@@ -76,6 +76,7 @@ async function main() {
     const flashHost = hosts[0]?.aiBase || state.ai_base;
     const flash = core.silenceCmdFlash(flashHost);
     console.log(`  cmd-flash=${flash.entry} phase-1=${flash.phase1} ok=${flash.ok}`);
+    for (const row of core.formatCliRepairLines(cliRepair)) console.log(`  ${row}`);
     if (hosts.length > 1) {
       console.log(`  多宿主 / multi-host: ${hosts.length} 份 @deepseek-ai 已清洗`);
     }

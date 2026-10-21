@@ -25,8 +25,12 @@ jobs:
         run: |
           node --check lib/index.js
           node --check lib/core.js
+          node --check lib/desktop.js
           node --check lib/reapply.js
           node --input-type=module -e "import './lib/index.js'"
+
+      - name: Test
+        run: node --test
 
       - name: Publish GitHub Release
         env:
